@@ -122,6 +122,25 @@
   .fig-status.ok { color: var(--accent-2); } .fig-status.err { color: #ff6b6b; } .fig-status.busy { color: var(--text-dim); }
   .fig-help { font-size: 10.5px; color: var(--text-dim); line-height: 1.5; padding: 2px 14px 12px; }
 
+  /* AI panel */
+  .ai-form { padding: 6px 14px 12px; }
+  .ai-input { width: 100%; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 8px 10px; outline: none; font-size: 12px; resize: vertical; font-family: inherit; }
+  .ai-input:focus { border-color: var(--accent); }
+  .ai-row { display: flex; gap: 8px; }
+  .ai-row .add-btn { flex: 1; width: auto; margin-left: 0; margin-right: 0; }
+  .ai-status { font-size: 11px; min-height: 14px; padding: 6px 0; line-height: 1.4; }
+  .ai-status.ok { color: var(--accent-2); } .ai-status.err { color: #ff6b6b; } .ai-status.busy { color: var(--accent); }
+  .ai-palette { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 6px; }
+  .ai-sw { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; position: relative; }
+  .ai-sw:hover { transform: scale(1.08); }
+
+  /* Templates */
+  .tpl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 12px; }
+  .tpl-card { border-radius: 8px; overflow: hidden; cursor: pointer; border: 1px solid var(--border); background: var(--panel-2); }
+  .tpl-card:hover { border-color: var(--accent); }
+  .tpl-card .tpl-thumb { width: 100%; aspect-ratio: 4/3; display: block; background: #fff; }
+  .tpl-card .tpl-name { font-size: 11px; padding: 5px 7px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
   /* Layers */
   #layers { padding: 0 6px 12px; }
   .layer-row { display: flex; align-items: center; gap: 7px; padding: 6px 8px; border-radius: 6px; color: var(--text); user-select: none; }
@@ -263,6 +282,8 @@
     <button class="rail-btn" data-tab="uploads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>Uploads</button>
     <button class="rail-btn" data-tab="layers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5"/></svg>Layers</button>
     <button class="rail-btn" data-tab="figma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2h4v4H8a2 2 0 110-4zM12 2h0a2 2 0 110 4M12 6H8a2 2 0 100 4h4zM12 10a2 2 0 102 2 2 2 0 00-2-2zM8 10a2 2 0 100 4 2 2 0 002-2v-2z"/></svg>Figma</button>
+    <button class="rail-btn" data-tab="templates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Templates</button>
+    <button class="rail-btn" data-tab="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z"/><path d="M19 14l.7 1.8 1.8.7-1.8.7L19 19l-.7-1.8-1.8-.7 1.8-.7z"/></svg>AI</button>
   </div>
 
   <!-- SIDE PANEL -->
@@ -309,6 +330,28 @@
       <div class="panel-head" style="margin-top:6px">Export to Figma</div>
       <button class="add-btn" id="figExportBtn" style="width:calc(100% - 24px)">⬆ Export page as Figma SVG</button>
       <div class="fig-help" style="padding:6px 14px 18px">In Figma, use <b>File → Import</b> (or drag the SVG in) to bring this design in as editable vectors.</div>
+    </div>
+    <div class="side-section" data-section="templates">
+      <div class="panel-head">Templates</div>
+      <div class="tpl-grid" id="tplGrid"></div>
+    </div>
+    <div class="side-section" data-section="ai">
+      <div class="panel-head">✦ AI Design</div>
+      <div class="ai-form">
+        <textarea class="ai-input" id="aiPrompt" rows="3" placeholder="Describe a design… e.g. 'a bold Instagram post announcing a summer coffee sale, warm colors'"></textarea>
+        <button class="add-btn solid" id="aiGenLayout" style="width:100%;margin:8px 0 4px">✦ Generate design</button>
+        <div class="ai-row">
+          <button class="add-btn" id="aiWrite" style="margin:4px 0">Write text</button>
+          <button class="add-btn" id="aiPalette" style="margin:4px 0">Color palette</button>
+        </div>
+        <button class="add-btn" id="aiImage" style="width:100%;margin:4px 0">Generate image</button>
+        <div class="ai-status" id="aiStatus"></div>
+        <div id="aiPaletteOut" class="ai-palette"></div>
+        <div class="fig-help">
+          Generates an editable design on a new page. <b>Write text</b> fills the selected text layer (or adds one). <b>Palette</b> gives clickable swatches.<br><br>
+          Powered by a secure Supabase function holding your API key — sign in to use. If you see "not configured", add the key in Supabase secrets.
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1560,6 +1603,178 @@ async function initBackend() {
 }
 
 /* ============================================================
+   AI FEATURES  (calls the secure 'ai' edge function)
+   ============================================================ */
+function aiStatus(msg, cls) { const el = document.getElementById("aiStatus"); if (el) { el.textContent = msg || ""; el.className = "ai-status " + (cls || ""); } }
+async function callAI(action, prompt) {
+  if (!backendAvailable) { aiStatus("Cloud unavailable (offline).", "err"); return null; }
+  if (!sbUser) { aiStatus("Sign in to use AI.", "err"); showAuth("in"); return null; }
+  try {
+    const { data: sess } = await sb.auth.getSession();
+    const token = sess && sess.session ? sess.session.access_token : null;
+    if (!token) { aiStatus("Sign in to use AI.", "err"); return null; }
+    const res = await fetch(`${SB_URL}/functions/v1/ai`, {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token, "apikey": SB_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ action, prompt, w: P().w, h: P().h }),
+    });
+    const j = await res.json().catch(() => ({ error: "Bad response from AI function" }));
+    if (j.error) { aiStatus(j.error, "err"); return null; }
+    return j;
+  } catch (e) {
+    aiStatus("AI request failed (is the 'ai' function deployed?).", "err");
+    return null;
+  }
+}
+function aiShapeToLumen(s) {
+  const num = (v, d) => { const n = parseFloat(v); return isFinite(n) ? n : d; };
+  const t = (s.type || "rect").toLowerCase();
+  if (t === "text") {
+    const sh = makeShape("text", num(s.x, 40), num(s.y, 40), num(s.w, 300), (num(s.fontSize, 28)) * 1.3);
+    sh.text = (s.text != null ? String(s.text) : "Text"); sh.fontSize = Math.max(6, num(s.fontSize, 28));
+    sh.weight = Math.max(100, Math.min(900, num(s.weight, 400))); sh.align = ["left", "center", "right"].includes(s.align) ? s.align : "left";
+    sh.fill = isHex(s.fill || "") ? s.fill : "#1e1e24"; sh.name = "AI Text"; return sh;
+  }
+  if (t === "ellipse") { const sh = makeShape("ellipse", num(s.x, 40), num(s.y, 40), num(s.w, 120), num(s.h, 120)); sh.fill = isHex(s.fill || "") ? s.fill : "#7c5cff"; sh.name = "AI Ellipse"; return sh; }
+  if (t === "line") { const sh = makeShape("line", num(s.x, 40), num(s.y, 40), 100, 0); sh.x2 = num(s.x2, sh.x + 120); sh.y2 = num(s.y2, sh.y); sh.stroke = isHex(s.stroke || "") ? s.stroke : "#2d2d3a"; sh.strokeWidth = Math.max(1, num(s.strokeWidth, 2)); sh.name = "AI Line"; return sh; }
+  // rect / frame / default
+  const sh = makeShape("rect", num(s.x, 40), num(s.y, 40), num(s.w, 200), num(s.h, 120));
+  sh.fill = isHex(s.fill || "") ? s.fill : "#7c5cff"; sh.radius = Math.max(0, num(s.radius, 0));
+  if (isHex(s.stroke || "")) { sh.stroke = s.stroke; sh.strokeWidth = Math.max(1, num(s.strokeWidth, 1)); }
+  sh.name = "AI Shape"; return sh;
+}
+function applyAILayout(shapes) {
+  if (!shapes || !shapes.length) { aiStatus("AI returned no shapes — try a more specific prompt.", "err"); return; }
+  pushHistory();
+  pageCounter++;
+  const cur = P();
+  const pg = { id: "p" + pageCounter, name: "AI design", w: cur.w, h: cur.h, bg: "#ffffff", shapes: [] };
+  for (const s of shapes) { const sh = aiShapeToLumen(s); if (sh) pg.shapes.push(sh); }
+  state.pages.push(pg);
+  switchPage(state.pages.length - 1);
+  aiStatus("Generated " + pg.shapes.length + " layers ✓", "ok");
+}
+function wireAI() {
+  const g = document.getElementById("aiGenLayout");
+  if (!g) return;
+  g.onclick = async () => {
+    const p = document.getElementById("aiPrompt").value.trim();
+    if (!p) { aiStatus("Describe what to design first.", "err"); return; }
+    aiStatus("Designing… (a few seconds)", "busy");
+    const j = await callAI("generate-layout", p);
+    if (j) applyAILayout(j.shapes);
+  };
+  document.getElementById("aiWrite").onclick = async () => {
+    const p = document.getElementById("aiPrompt").value.trim() || "a punchy headline";
+    aiStatus("Writing…", "busy");
+    const j = await callAI("write-text", p);
+    if (!j) return;
+    const sel = selectedShapes();
+    if (sel.length === 1 && sel[0].type === "text") { pushHistory(); sel[0].text = j.text; render(); renderLayers(); renderProps(); renderPages(); }
+    else { pushHistory(); const c = centerPoint(); const s = makeShape("text", c.x - 250, c.y - 30, 500, 60); s.text = j.text; s.fontSize = 40; s.weight = 700; s.align = "center"; s.name = "AI Text"; P().shapes.push(s); state.selected = new Set([s.id]); render(); renderLayers(); renderProps(); renderPages(); }
+    aiStatus("Text added ✓", "ok");
+  };
+  document.getElementById("aiPalette").onclick = async () => {
+    const p = document.getElementById("aiPrompt").value.trim() || "a modern friendly brand";
+    aiStatus("Mixing colors…", "busy");
+    const j = await callAI("palette", p);
+    if (!j) return;
+    const out = document.getElementById("aiPaletteOut"); out.innerHTML = "";
+    (j.palette || []).forEach(c => {
+      const sw = document.createElement("div"); sw.className = "ai-sw"; sw.style.background = c; sw.title = c + " — click to apply to selection";
+      sw.onclick = () => { const sel = selectedShapes(); if (sel.length) { pushHistory(); sel.forEach(s => { if (s.type === "text" || s.type === "icon" || s.type === "rect" || s.type === "frame" || s.type === "ellipse") s.fill = c; }); render(); renderLayers(); renderProps(); renderPages(); aiStatus("Applied " + c, "ok"); } else { aiStatus("Select a shape, then click a swatch.", "err"); } };
+      out.appendChild(sw);
+    });
+    aiStatus((j.palette || []).length + " colors ✓", "ok");
+  };
+  document.getElementById("aiImage").onclick = async () => {
+    const p = document.getElementById("aiPrompt").value.trim();
+    if (!p) { aiStatus("Describe the image first.", "err"); return; }
+    aiStatus("Generating image… (slower)", "busy");
+    const j = await callAI("generate-image", p);
+    if (!j) return;
+    const src = j.imageDataUrl || j.imageUrl;
+    if (!src) { aiStatus("No image returned.", "err"); return; }
+    placeImage(src, centerPoint());
+    aiStatus("Image added ✓", "ok");
+  };
+}
+
+/* ============================================================
+   TEMPLATES  (bundled, click to load — no backend needed)
+   ============================================================ */
+function T(type, x, y, w, h, props) { const s = makeShape(type, x, y, w, h); Object.assign(s, props || {}); if (type === "line" && props && props.x2 == null) { s.x2 = x + w; s.y2 = y + h; } return s; }
+const TEMPLATES = [
+  { name: "Sale Post", w: 1080, h: 1080, bg: "#0f1020", build: () => [
+    T("rect", 0, 0, 1080, 1080, { fill: "#0f1020", name: "BG" }),
+    T("ellipse", 700, -150, 600, 600, { fill: "#7c5cff", opacity: 0.5, name: "Glow" }),
+    T("ellipse", -200, 700, 600, 600, { fill: "#00cec9", opacity: 0.35, name: "Glow2" }),
+    T("text", 90, 300, 900, 0, { text: "SUMMER", fontSize: 150, weight: 800, align: "left", fill: "#ffffff", name: "Big1" }),
+    T("text", 90, 450, 900, 0, { text: "SALE", fontSize: 150, weight: 800, align: "left", fill: "#00cec9", name: "Big2" }),
+    T("text", 95, 640, 900, 0, { text: "Up to 50% off — this week only", fontSize: 38, weight: 400, align: "left", fill: "#c9c9d6", name: "Sub" }),
+    T("rect", 90, 760, 360, 96, { fill: "#7c5cff", radius: 16, name: "Btn" }),
+    T("text", 90, 786, 360, 0, { text: "Shop now", fontSize: 38, weight: 700, align: "center", fill: "#ffffff", name: "BtnLabel" }),
+  ] },
+  { name: "Title Slide", w: 1280, h: 720, bg: "#ffffff", build: () => [
+    T("rect", 0, 0, 1280, 720, { fill: "#ffffff", name: "BG" }),
+    T("rect", 0, 0, 14, 720, { fill: "#7c5cff", name: "Accent" }),
+    T("text", 90, 250, 1000, 0, { text: "Project Kickoff", fontSize: 84, weight: 800, align: "left", fill: "#16161d", name: "Title" }),
+    T("text", 95, 380, 1000, 0, { text: "Goals, timeline, and the team", fontSize: 34, weight: 400, align: "left", fill: "#6b6b7a", name: "Sub" }),
+    T("line", 95, 470, 300, 0, { stroke: "#7c5cff", strokeWidth: 4, name: "Rule" }),
+    T("text", 95, 620, 1000, 0, { text: "Lumen Studio · 2026", fontSize: 22, weight: 500, align: "left", fill: "#9a9aa6", name: "Footer" }),
+  ] },
+  { name: "Event Poster", w: 1000, h: 1500, bg: "#111522", build: () => [
+    T("rect", 0, 0, 1000, 1500, { fill: "#111522", name: "BG" }),
+    T("rect", 0, 0, 1000, 520, { fill: "#7c5cff", name: "Header" }),
+    T("ellipse", 620, 120, 280, 280, { fill: "#00cec9", name: "Dot" }),
+    T("text", 70, 180, 880, 0, { text: "LIVE", fontSize: 130, weight: 800, align: "left", fill: "#ffffff", name: "Live" }),
+    T("text", 70, 330, 880, 0, { text: "MUSIC NIGHT", fontSize: 70, weight: 800, align: "left", fill: "#111522", name: "Music" }),
+    T("text", 70, 700, 880, 0, { text: "Friday · 8 PM", fontSize: 60, weight: 700, align: "left", fill: "#ffffff", name: "When" }),
+    T("text", 72, 800, 880, 0, { text: "The Riverside Hall, Downtown", fontSize: 34, weight: 400, align: "left", fill: "#c9c9d6", name: "Where" }),
+    T("rect", 70, 1280, 420, 110, { fill: "#00cec9", radius: 14, name: "Btn" }),
+    T("text", 70, 1312, 420, 0, { text: "Get tickets", fontSize: 42, weight: 700, align: "center", fill: "#08343a", name: "BtnLabel" }),
+  ] },
+  { name: "Business Card", w: 525, h: 300, bg: "#ffffff", build: () => [
+    T("rect", 0, 0, 525, 300, { fill: "#ffffff", name: "BG" }),
+    T("rect", 0, 0, 525, 70, { fill: "#16161d", name: "Bar" }),
+    T("ellipse", 36, 26, 24, 24, { fill: "#7c5cff", name: "Mark" }),
+    T("text", 74, 26, 300, 0, { text: "Lumen Studio", fontSize: 24, weight: 700, align: "left", fill: "#ffffff", name: "Brand" }),
+    T("text", 40, 150, 400, 0, { text: "Alex Rivera", fontSize: 34, weight: 800, align: "left", fill: "#16161d", name: "Name" }),
+    T("text", 42, 200, 400, 0, { text: "Product Designer", fontSize: 20, weight: 400, align: "left", fill: "#6b6b7a", name: "Role" }),
+    T("text", 42, 250, 400, 0, { text: "alex@lumen.studio · +1 555 0102", fontSize: 16, weight: 400, align: "left", fill: "#9a9aa6", name: "Contact" }),
+  ] },
+  { name: "Quote", w: 1080, h: 1080, bg: "#f4f1ea", build: () => [
+    T("rect", 0, 0, 1080, 1080, { fill: "#f4f1ea", name: "BG" }),
+    T("text", 100, 150, 880, 0, { text: "“", fontSize: 220, weight: 800, align: "left", fill: "#7c5cff", name: "Mark" }),
+    T("text", 110, 380, 860, 0, { text: "Design is intelligence made visible.", fontSize: 64, weight: 700, align: "left", fill: "#2b2b33", name: "Quote" }),
+    T("line", 115, 720, 200, 0, { stroke: "#7c5cff", strokeWidth: 5, name: "Rule" }),
+    T("text", 115, 760, 860, 0, { text: "— Alina Wheeler", fontSize: 32, weight: 500, align: "left", fill: "#6b6b7a", name: "Author" }),
+  ] },
+];
+function buildTemplates() {
+  const grid = document.getElementById("tplGrid"); if (!grid) return;
+  grid.innerHTML = "";
+  TEMPLATES.forEach((t, i) => {
+    const card = document.createElement("div"); card.className = "tpl-card";
+    const pg = { w: t.w, h: t.h, bg: t.bg, shapes: t.build() };
+    const thumb = pageThumb(pg); thumb.classList.add("tpl-thumb");
+    card.appendChild(thumb);
+    const name = document.createElement("div"); name.className = "tpl-name"; name.textContent = `${t.name} · ${t.w}×${t.h}`;
+    card.appendChild(name);
+    card.onclick = () => loadTemplate(i);
+    grid.appendChild(card);
+  });
+}
+function loadTemplate(i) {
+  const t = TEMPLATES[i]; if (!t) return;
+  pushHistory(); pageCounter++;
+  const pg = { id: "p" + pageCounter, name: t.name, w: t.w, h: t.h, bg: t.bg, shapes: t.build() };
+  state.pages.push(pg);
+  switchPage(state.pages.length - 1);
+  flashHint('Loaded "' + t.name + '" template ✓');
+}
+
+/* ============================================================
    SEED
    ============================================================ */
 function seed() {
@@ -1571,7 +1786,7 @@ function seed() {
   const btn = makeShape("rect", pg.w/2 - 110, 520, 220, 64); btn.fill = "#00cec9"; btn.radius = 14; btn.name = "Button";
   const btnT = makeShape("text", pg.w/2 - 80, 535, 160, 32); btnT.text = "Get started"; btnT.fontSize = 26; btnT.weight = 600; btnT.align = "center"; btnT.x = pg.w/2 - 80; btnT.fill = "#08343a"; btnT.name = "Button Label";
   pg.shapes = [band, star, title, sub, btn, btnT];
-  fullRender(); syncSizeSelect(); buildElementGrids(); renderUploads(); initFigma();
+  fullRender(); syncSizeSelect(); buildElementGrids(); renderUploads(); initFigma(); buildTemplates(); wireAI();
   setTimeout(zoomToFit, 30);
 }
 const bootViewId = parseViewId();
