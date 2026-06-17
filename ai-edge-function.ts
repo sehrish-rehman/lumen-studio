@@ -62,6 +62,17 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
 
+  // Require a real signed-in user (role "authenticated"), not just the public anon/apikey,
+  // so the embedded publishable key can't be used by strangers to burn your API credits.
+  const authz = req.headers.get("authorization") || "";
+  const jwt = authz.replace(/^Bearer\s+/i, "");
+  let role: string | null = null;
+  try {
+    const payload = JSON.parse(atob(jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    role = payload.role ?? null;
+  } catch { role = null; }
+  if (role !== "authenticated") return json({ error: "Sign in required to use AI." }, 401);
+
   let body: any;
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON body" }, 400); }
   const action = body.action as string;
