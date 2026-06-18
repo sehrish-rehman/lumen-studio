@@ -1818,7 +1818,185 @@ const TEMPLATES = [
     T("line", 115, 720, 200, 0, { stroke: "#7c5cff", strokeWidth: 5, name: "Rule" }),
     T("text", 115, 760, 860, 0, { text: "— Alina Wheeler", fontSize: 32, weight: 500, align: "left", fill: "#6b6b7a", name: "Author" }),
   ] },
+
+  // ---------- Business cards (1050×600) ----------
+  { name: "Card · Minimal", w: 1050, h: 600, bg: "#ffffff", build: () => [
+    T("rect", 0, 0, 1050, 600, { fill: "#ffffff", name: "BG" }),
+    T("line", 90, 150, 0, 300, { stroke: "#7c5cff", strokeWidth: 5, name: "Accent line" }),
+    T("ellipse", 928, 70, 22, 22, { fill: "#7c5cff", name: "Mark" }),
+    T("text", 130, 188, 700, 0, { text: "Alex Rivera", fontSize: 70, weight: 800, align: "left", fill: "#15151c", name: "Name" }),
+    T("text", 132, 282, 700, 0, { text: "Product Designer", fontSize: 30, weight: 400, align: "left", fill: "#7a7a88", name: "Role" }),
+    T("text", 132, 420, 700, 0, { text: "alex@lumen.studio", fontSize: 24, weight: 500, align: "left", fill: "#15151c", name: "Email" }),
+    T("text", 132, 460, 700, 0, { text: "+1 555 0102   ·   lumen.studio", fontSize: 22, weight: 400, align: "left", fill: "#9a9aa6", name: "Contact" }),
+  ] },
+  { name: "Card · Minimal Mono", w: 1050, h: 600, bg: "#f6f6f4", build: () => [
+    T("rect", 0, 0, 1050, 600, { fill: "#f6f6f4", name: "BG" }),
+    T("rect", 70, 70, 70, 70, { fill: "#15151c", radius: 0, name: "Square" }),
+    T("text", 84, 90, 200, 0, { text: "LS", fontSize: 30, weight: 800, align: "left", fill: "#ffffff", name: "Monogram" }),
+    T("line", 70, 470, 910, 0, { stroke: "#d8d8d2", strokeWidth: 2, name: "Rule" }),
+    T("text", 70, 250, 900, 0, { text: "Maya Chen", fontSize: 62, weight: 700, align: "left", fill: "#15151c", name: "Name" }),
+    T("text", 72, 330, 900, 0, { text: "Founder & Creative Director", fontSize: 26, weight: 400, align: "left", fill: "#6b6b6b", name: "Role" }),
+    T("text", 70, 505, 900, 0, { text: "maya@studio.co   ·   +1 555 0148   ·   studio.co", fontSize: 22, weight: 400, align: "left", fill: "#8a8a88", name: "Contact" }),
+  ] },
+  { name: "Card · Bold", w: 1050, h: 600, bg: "#15151c", build: () => [
+    T("rect", 0, 0, 1050, 600, { fill: "#15151c", name: "BG" }),
+    T("rect", 0, 0, 360, 600, { fill: "#7c5cff", name: "Sidebar" }),
+    T("ellipse", 120, 120, 120, 120, { fill: "#ffffff", name: "Avatar" }),
+    T("text", 150, 165, 200, 0, { text: "JD", fontSize: 56, weight: 800, align: "left", fill: "#7c5cff", name: "Initials" }),
+    T("text", 60, 360, 280, 0, { text: "DESIGN", fontSize: 40, weight: 800, align: "left", fill: "#ffffff", name: "Tagline 1" }),
+    T("text", 60, 414, 280, 0, { text: "LEAD", fontSize: 40, weight: 800, align: "left", fill: "#ffffff", name: "Tagline 2" }),
+    T("text", 430, 200, 560, 0, { text: "Jordan Diaz", fontSize: 76, weight: 800, align: "left", fill: "#ffffff", name: "Name" }),
+    T("text", 432, 300, 560, 0, { text: "Brand & Product Design", fontSize: 30, weight: 500, align: "left", fill: "#00cec9", name: "Role" }),
+    T("text", 432, 440, 560, 0, { text: "jordan@studio.io", fontSize: 26, weight: 500, align: "left", fill: "#ffffff", name: "Email" }),
+    T("text", 432, 485, 560, 0, { text: "+1 555 0190   ·   studio.io", fontSize: 22, weight: 400, align: "left", fill: "#9a9aa6", name: "Contact" }),
+  ] },
+  { name: "Card · Bold Color", w: 1050, h: 600, bg: "#7c5cff", build: () => [
+    T("rect", 0, 0, 1050, 600, { fill: "#7c5cff", name: "BG" }),
+    T("ellipse", 720, -120, 460, 460, { fill: "#00cec9", opacity: 0.45, name: "Glow" }),
+    T("ellipse", -140, 360, 420, 420, { fill: "#5b43d6", opacity: 0.6, name: "Glow2" }),
+    T("text", 80, 150, 700, 0, { text: "Sam", fontSize: 96, weight: 800, align: "left", fill: "#ffffff", name: "Name 1" }),
+    T("text", 80, 258, 700, 0, { text: "Okoro", fontSize: 96, weight: 800, align: "left", fill: "#ffffff", name: "Name 2" }),
+    T("rect", 86, 410, 280, 8, { fill: "#ffffff", radius: 4, name: "Underline" }),
+    T("text", 84, 450, 700, 0, { text: "Art Director", fontSize: 34, weight: 600, align: "left", fill: "#eae6ff", name: "Role" }),
+    T("text", 84, 520, 700, 0, { text: "hello@samokoro.com   ·   +1 555 0173", fontSize: 24, weight: 500, align: "left", fill: "#ffffff", name: "Contact" }),
+  ] },
+  { name: "Card · Bold Split", w: 1050, h: 600, bg: "#ffffff", build: () => [
+    T("rect", 0, 0, 1050, 600, { fill: "#ffffff", name: "BG" }),
+    T("rect", 0, 0, 1050, 230, { fill: "#15151c", name: "Top band" }),
+    T("rect", 0, 224, 1050, 10, { fill: "#7c5cff", name: "Stripe" }),
+    T("ellipse", 80, 70, 90, 90, { fill: "#7c5cff", name: "Mark" }),
+    T("text", 196, 92, 700, 0, { text: "STUDIO LUMEN", fontSize: 40, weight: 800, align: "left", fill: "#ffffff", name: "Brand" }),
+    T("text", 198, 150, 700, 0, { text: "Design & Strategy", fontSize: 24, weight: 400, align: "left", fill: "#9a9aa6", name: "Brand sub" }),
+    T("text", 80, 320, 900, 0, { text: "Riley Park", fontSize: 64, weight: 800, align: "left", fill: "#15151c", name: "Name" }),
+    T("text", 82, 400, 900, 0, { text: "Senior Designer", fontSize: 28, weight: 500, align: "left", fill: "#7c5cff", name: "Role" }),
+    T("text", 80, 500, 900, 0, { text: "riley@lumen.studio   ·   +1 555 0166   ·   lumen.studio", fontSize: 22, weight: 400, align: "left", fill: "#6b6b7a", name: "Contact" }),
+  ] },
 ];
+
+/* ---------- 15 more generated business cards (layout archetypes × palettes) ---------- */
+(function addBusinessCards() {
+  const ini = n => n.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const short = p => p.line2.split("·")[0].trim();
+  const PAL = {
+    midnight: { bg: "#15151c", ink: "#ffffff", sub: "#9a9aa6", accent: "#7c5cff", accent2: "#00cec9", onAccent: "#ffffff" },
+    snow:     { bg: "#ffffff", ink: "#15151c", sub: "#7a7a88", accent: "#7c5cff", accent2: "#00cec9", onAccent: "#ffffff" },
+    teal:     { bg: "#0b3b3a", ink: "#ffffff", sub: "#a7d8d4", accent: "#00cec9", accent2: "#ffd166", onAccent: "#06302e" },
+    coral:    { bg: "#fff5f2", ink: "#2b1a16", sub: "#9c7b72", accent: "#ff6b6b", accent2: "#ffa94d", onAccent: "#ffffff" },
+    navy:     { bg: "#0f1830", ink: "#ffffff", sub: "#9fb0d0", accent: "#4d8bff", accent2: "#00cec9", onAccent: "#ffffff" },
+    forest:   { bg: "#10261c", ink: "#ffffff", sub: "#a8c6b5", accent: "#2ecc71", accent2: "#f1c40f", onAccent: "#061a10" },
+    sand:     { bg: "#f4efe6", ink: "#2c2519", sub: "#8a7d66", accent: "#c08a3e", accent2: "#2c2519", onAccent: "#ffffff" },
+    mono:     { bg: "#ffffff", ink: "#111111", sub: "#888888", accent: "#111111", accent2: "#888888", onAccent: "#ffffff" },
+    grape:    { bg: "#2a1740", ink: "#ffffff", sub: "#c9b8e6", accent: "#b06bff", accent2: "#ff7eb6", onAccent: "#ffffff" },
+    sky:      { bg: "#eef6ff", ink: "#102a43", sub: "#6b829c", accent: "#2d8cff", accent2: "#00b8a9", onAccent: "#ffffff" },
+    charcoal: { bg: "#1f1f24", ink: "#f2f2f5", sub: "#a0a0aa", accent: "#ffd166", accent2: "#ff6b6b", onAccent: "#1f1f24" },
+    blush:    { bg: "#fdeff3", ink: "#3a1f2b", sub: "#a07b89", accent: "#e84393", accent2: "#fd79a8", onAccent: "#ffffff" },
+  };
+  const L = {
+    leftBar: (p, pe) => [
+      T("rect", 0, 0, 1050, 600, { fill: p.bg, name: "BG" }),
+      T("rect", 0, 0, 360, 600, { fill: p.accent, name: "Sidebar" }),
+      T("ellipse", 120, 130, 120, 120, { fill: "#ffffff", name: "Avatar" }),
+      T("text", 150, 172, 200, 0, { text: ini(pe.name), fontSize: 54, weight: 800, fill: p.accent, name: "Monogram" }),
+      T("text", 60, 360, 300, 0, { text: pe.role.toUpperCase(), fontSize: 22, weight: 700, fill: p.onAccent, name: "Tag" }),
+      T("text", 430, 200, 560, 0, { text: pe.name, fontSize: 72, weight: 800, fill: p.ink, name: "Name" }),
+      T("line", 432, 300, 180, 0, { stroke: p.accent, strokeWidth: 5, name: "Rule" }),
+      T("text", 432, 330, 560, 0, { text: pe.role, fontSize: 30, weight: 500, fill: p.sub, name: "Role" }),
+      T("text", 432, 450, 560, 0, { text: pe.email, fontSize: 25, weight: 500, fill: p.ink, name: "Email" }),
+      T("text", 432, 492, 560, 0, { text: pe.line2, fontSize: 21, weight: 400, fill: p.sub, name: "Contact" }),
+    ],
+    split: (p, pe) => [
+      T("rect", 0, 0, 1050, 600, { fill: p.bg, name: "BG" }),
+      T("rect", 0, 0, 430, 600, { fill: p.ink, name: "Block" }),
+      T("ellipse", 60, 110, 80, 80, { fill: p.accent, name: "Dot" }),
+      T("text", 60, 250, 330, 0, { text: pe.name, fontSize: 56, weight: 800, fill: p.bg, name: "Name" }),
+      T("text", 62, 350, 330, 0, { text: pe.role, fontSize: 26, weight: 500, fill: p.accent, name: "Role" }),
+      T("text", 520, 240, 470, 0, { text: pe.email, fontSize: 30, weight: 600, fill: p.ink, name: "Email" }),
+      T("text", 520, 300, 470, 0, { text: pe.line2, fontSize: 23, weight: 400, fill: p.sub, name: "Contact" }),
+      T("rect", 520, 410, 220, 66, { fill: p.accent, radius: 10, name: "Button" }),
+      T("text", 520, 430, 220, 0, { text: "Get in touch", fontSize: 24, weight: 700, align: "center", fill: p.onAccent, name: "BtnLabel" }),
+    ],
+    cornerGlow: (p, pe) => [
+      T("rect", 0, 0, 1050, 600, { fill: p.accent, name: "BG" }),
+      T("ellipse", 720, -130, 470, 470, { fill: p.accent2, opacity: 0.4, name: "Glow" }),
+      T("ellipse", -150, 360, 430, 430, { fill: "#ffffff", opacity: 0.12, name: "Glow2" }),
+      T("text", 80, 165, 780, 0, { text: pe.name, fontSize: 82, weight: 800, fill: "#ffffff", name: "Name" }),
+      T("rect", 86, 300, 260, 8, { fill: "#ffffff", radius: 4, name: "Underline" }),
+      T("text", 84, 340, 780, 0, { text: pe.role, fontSize: 32, weight: 600, fill: "#ffffff", opacity: 0.92, name: "Role" }),
+      T("text", 84, 470, 820, 0, { text: pe.email + "   ·   " + short(pe), fontSize: 24, weight: 500, fill: "#ffffff", name: "Contact" }),
+    ],
+    centeredMinimal: (p, pe) => [
+      T("rect", 0, 0, 1050, 600, { fill: p.bg, name: "BG" }),
+      T("ellipse", 495, 92, 60, 60, { fill: p.accent, name: "Mark" }),
+      T("text", 0, 250, 1050, 0, { text: pe.name, fontSize: 64, weight: 800, align: "center", fill: p.ink, name: "Name" }),
+      T("text", 0, 340, 1050, 0, { text: pe.role.toUpperCase(), fontSize: 23, weight: 600, align: "center", fill: p.accent, name: "Role" }),
+      T("line", 455, 402, 140, 0, { stroke: p.sub, strokeWidth: 2, name: "Rule" }),
+      T("text", 0, 438, 1050, 0, { text: pe.email, fontSize: 24, weight: 500, align: "center", fill: p.ink, name: "Email" }),
+      T("text", 0, 476, 1050, 0, { text: pe.line2, fontSize: 20, weight: 400, align: "center", fill: p.sub, name: "Contact" }),
+    ],
+    monoFrame: (p, pe) => [
+      T("rect", 0, 0, 1050, 600, { fill: p.bg, name: "BG" }),
+      T("rect", 40, 40, 970, 520, { fill: "#00000000", stroke: p.ink, strokeWidth: 2, name: "Frame" }),
+      T("rect", 70, 70, 64, 64, { fill: p.ink, name: "Mark" }),
+      T("text", 84, 90, 200, 0, { text: ini(pe.name), fontSize: 28, weight: 800, fill: p.bg, name: "Monogram" }),
+      T("text", 70, 250, 900, 0, { text: pe.name, fontSize: 60, weight: 700, fill: p.ink, name: "Name" }),
+      T("text", 72, 330, 900, 0, { text: pe.role, fontSize: 26, weight: 400, fill: p.sub, name: "Role" }),
+      T("text", 70, 500, 900, 0, { text: pe.email + "   ·   " + short(pe), fontSize: 21, weight: 400, fill: p.sub, name: "Contact" }),
+    ],
+    topBand: (p, pe) => [
+      T("rect", 0, 0, 1050, 600, { fill: p.bg, name: "BG" }),
+      T("rect", 0, 0, 1050, 200, { fill: p.accent, name: "Band" }),
+      T("rect", 0, 196, 1050, 8, { fill: p.accent2, name: "Stripe" }),
+      T("ellipse", 70, 65, 90, 90, { fill: "#ffffff", name: "Mark" }),
+      T("text", 95, 95, 200, 0, { text: ini(pe.name), fontSize: 40, weight: 800, fill: p.accent, name: "Monogram" }),
+      T("text", 200, 80, 760, 0, { text: pe.name, fontSize: 46, weight: 800, fill: p.onAccent, name: "Name" }),
+      T("text", 202, 138, 760, 0, { text: pe.role, fontSize: 24, weight: 500, fill: "#ffffff", opacity: 0.88, name: "Role" }),
+      T("text", 70, 320, 900, 0, { text: pe.email, fontSize: 30, weight: 600, fill: p.ink, name: "Email" }),
+      T("text", 70, 380, 900, 0, { text: pe.line2, fontSize: 24, weight: 400, fill: p.sub, name: "Contact" }),
+      T("line", 70, 472, 910, 0, { stroke: p.accent, strokeWidth: 3, name: "Rule" }),
+    ],
+    stripeStack: (p, pe) => [
+      T("rect", 0, 0, 1050, 600, { fill: p.bg, name: "BG" }),
+      T("rect", 0, 80, 1050, 14, { fill: p.accent, name: "Stripe1" }),
+      T("rect", 0, 110, 640, 14, { fill: p.accent2, name: "Stripe2" }),
+      T("text", 70, 215, 900, 0, { text: pe.name, fontSize: 66, weight: 800, fill: p.ink, name: "Name" }),
+      T("text", 72, 305, 900, 0, { text: pe.role.toUpperCase(), fontSize: 24, weight: 700, fill: p.accent, name: "Role" }),
+      T("text", 70, 430, 900, 0, { text: pe.email, fontSize: 26, weight: 500, fill: p.ink, name: "Email" }),
+      T("text", 70, 476, 900, 0, { text: pe.line2, fontSize: 21, weight: 400, fill: p.sub, name: "Contact" }),
+      T("rect", 0, 560, 1050, 40, { fill: p.ink, name: "Footer" }),
+      T("text", 70, 568, 900, 0, { text: "lumen.studio", fontSize: 18, weight: 600, fill: p.bg, name: "Brand" }),
+    ],
+    bigInitial: (p, pe) => [
+      T("rect", 0, 0, 1050, 600, { fill: p.bg, name: "BG" }),
+      T("text", 560, 110, 500, 0, { text: ini(pe.name), fontSize: 300, weight: 800, fill: p.accent, opacity: 0.12, name: "Watermark" }),
+      T("text", 80, 240, 760, 0, { text: pe.name, fontSize: 72, weight: 800, fill: p.ink, name: "Name" }),
+      T("text", 82, 340, 760, 0, { text: pe.role, fontSize: 30, weight: 500, fill: p.accent, name: "Role" }),
+      T("line", 84, 420, 160, 0, { stroke: p.accent, strokeWidth: 5, name: "Rule" }),
+      T("text", 80, 468, 760, 0, { text: pe.email, fontSize: 25, weight: 500, fill: p.ink, name: "Email" }),
+      T("text", 80, 508, 760, 0, { text: pe.line2, fontSize: 21, weight: 400, fill: p.sub, name: "Contact" }),
+    ],
+  };
+  const PE = [
+    { name: "Alex Rivera", role: "Product Designer", email: "alex@lumen.studio", line2: "+1 555 0102 · lumen.studio" },
+    { name: "Maya Chen", role: "Creative Director", email: "maya@studio.co", line2: "+1 555 0148 · studio.co" },
+    { name: "Jordan Diaz", role: "Brand Strategist", email: "jordan@studio.io", line2: "+1 555 0190 · studio.io" },
+    { name: "Sam Okoro", role: "Art Director", email: "sam@okoro.design", line2: "+1 555 0173 · okoro.design" },
+    { name: "Riley Park", role: "UX Engineer", email: "riley@lumen.studio", line2: "+1 555 0166 · lumen.studio" },
+    { name: "Noa Levi", role: "Photographer", email: "noa@levi.photo", line2: "+1 555 0121 · levi.photo" },
+    { name: "Kai Tanaka", role: "Founder & CEO", email: "kai@kaitanaka.co", line2: "+1 555 0155 · kaitanaka.co" },
+    { name: "Ivy Bloom", role: "Marketing Lead", email: "ivy@bloomco.com", line2: "+1 555 0188 · bloomco.com" },
+  ];
+  const combos = [
+    ["Aurora", "leftBar", "grape", 0], ["Onyx", "split", "midnight", 1], ["Coral Pop", "cornerGlow", "coral", 2],
+    ["Teal Minimal", "centeredMinimal", "teal", 3], ["Mono Frame", "monoFrame", "mono", 4], ["Skyline", "topBand", "sky", 5],
+    ["Sand Stripe", "stripeStack", "sand", 6], ["Midnight Initial", "bigInitial", "midnight", 7], ["Evergreen", "leftBar", "forest", 0],
+    ["Navy Split", "split", "navy", 1], ["Grape Glow", "cornerGlow", "grape", 2], ["Blush", "centeredMinimal", "blush", 3],
+    ["Charcoal Frame", "monoFrame", "charcoal", 4], ["Coral Band", "topBand", "coral", 5], ["Teal Initial", "bigInitial", "teal", 7],
+  ];
+  combos.forEach(([label, layout, pal, pi]) => {
+    const p = PAL[pal];
+    TEMPLATES.push({ name: "Card · " + label, w: 1050, h: 600, bg: p.bg, build: () => L[layout](p, PE[pi]) });
+  });
+})();
 function buildTemplates() {
   const grid = document.getElementById("tplGrid"); if (!grid) return;
   grid.innerHTML = "";
