@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Lumen Studio — Canva-style Design Tool</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"></script>
 <style>
   :root {
     --bg: #1b1b22;
@@ -197,6 +198,36 @@
 
   .hintbar { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); background: rgba(20,20,26,.92); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 12px; border-radius: 20px; font-size: 11px; pointer-events: none; white-space: nowrap; backdrop-filter: blur(4px); }
   kbd { background: var(--panel-2); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; font-size: 10px; color: var(--text); }
+  /* ---------- Home (Canva-style) ---------- */
+  #home { position: fixed; inset: 0; z-index: 150; background: var(--bg); overflow-y: auto; display: none; }
+  #home.open { display: block; }
+  .home-top { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 14px; padding: 14px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
+  .home-brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 16px; }
+  .home-brand .logo { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: grid; place-items: center; color: #fff; font-weight: 800; }
+  .home-search { flex: 1; max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 0 14px; height: 46px; }
+  .home-search:focus-within { border-color: var(--accent); }
+  .home-search input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-size: 15px; }
+  .home-search svg { width: 19px; height: 19px; color: var(--text-dim); }
+  .home-top .topbar-action { height: 38px; }
+  .home-hero { max-width: 1100px; margin: 0 auto; padding: 40px 28px 8px; }
+  .home-hero h1 { font-size: 34px; font-weight: 800; letter-spacing: -.02em; }
+  .home-hero p { color: var(--text-dim); margin-top: 8px; font-size: 15px; }
+  .home-section { max-width: 1100px; margin: 0 auto; padding: 22px 28px; }
+  .home-section h2 { font-size: 16px; margin-bottom: 14px; }
+  .create-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(116px, 1fr)); gap: 14px; }
+  .create-tile { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; text-align: center; }
+  .create-tile:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .create-tile .ct-ic { width: 54px; height: 54px; border-radius: 12px; display: grid; place-items: center; color: #fff; }
+  .create-tile .ct-name { font-size: 12px; font-weight: 600; }
+  .create-tile .ct-dim { font-size: 10.5px; color: var(--text-dim); }
+  .tpl-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+  .home-tpl { border-radius: 12px; overflow: hidden; cursor: pointer; border: 1px solid var(--border); background: var(--panel); }
+  .home-tpl:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .home-tpl .ht-thumb { width: 100%; aspect-ratio: 4/3; background: #fff; display: block; }
+  .home-tpl .ht-name { font-size: 12px; padding: 8px 10px; color: var(--text); }
+  .home-empty { color: var(--text-dim); font-size: 13px; padding: 6px 0; }
+  .create-tile, .home-tpl { transition: transform .12s, border-color .12s; }
+
   /* Modal */
   .modal-wrap { position: fixed; inset: 0; background: rgba(8,8,12,.55); display: none; align-items: center; justify-content: center; z-index: 200; backdrop-filter: blur(2px); }
   .modal-wrap.open { display: flex; }
@@ -235,9 +266,39 @@
 </style>
 </head>
 <body>
+<!-- ============ HOME (Canva-style) ============ -->
+<div id="home">
+  <div class="home-top">
+    <div class="home-brand"><span class="logo">L</span> Lumen Studio</div>
+    <div class="home-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <input id="homeSearch" type="text" placeholder="Search templates and design types…">
+    </div>
+    <button class="topbar-action" id="homeAuthBtn">Sign in</button>
+    <button class="topbar-action primary" id="homeBlank">+ Blank</button>
+  </div>
+  <div class="home-hero">
+    <h1>What will you design today?</h1>
+    <p>Start from a size, pick a template, or import an image — then export to Figma, PNG or SVG.</p>
+  </div>
+  <div class="home-section">
+    <h2 id="createHeading">Create a design</h2>
+    <div class="create-row" id="createRow"></div>
+  </div>
+  <div class="home-section">
+    <h2 id="tplHeading">Templates</h2>
+    <div class="tpl-row" id="homeTplRow"></div>
+  </div>
+  <div class="home-section" id="yourDesignsSection">
+    <h2>Your designs</h2>
+    <div id="homeDesigns" class="home-empty">Sign in to see your saved designs.</div>
+  </div>
+</div>
+
 <div id="app">
   <!-- TOP BAR -->
   <div id="topbar">
+    <button class="tool-btn" id="homeBtn" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3 11l9-8 9 8M5 9.5V21h14V9.5"/></svg></button>
     <div class="brand"><span class="logo">L</span> Lumen Studio</div>
     <div class="divider"></div>
     <div class="tool-group" id="tools">
@@ -548,11 +609,12 @@ function buildShapeEl(s, idSuffix) {
     el.style.filter = filterStr(s.filters);
   } else if (s.type === "icon") {
     el = document.createElementNS(SVGNS, "g");
-    const vb = s.vb || 24;
-    el.setAttribute("transform", `translate(${norm.x} ${norm.y}) scale(${norm.w / vb} ${norm.h / vb})`);
+    const vbW = s.vbW || s.vb || 24, vbH = s.vbH || s.vb || 24;
+    el.setAttribute("transform", `translate(${norm.x} ${norm.y}) scale(${norm.w / vbW} ${norm.h / vbH})`);
     const path = document.createElementNS(SVGNS, "path");
     path.setAttribute("d", s.path);
     path.setAttribute("fill", s.fill);
+    if (s.iconOpacity != null) path.setAttribute("fill-opacity", s.iconOpacity);
     el.appendChild(path);
   }
   el.setAttribute("class", "shape");
@@ -926,10 +988,10 @@ function handleFiles(files, dropPt) {
     // When signed in, store in Supabase Storage and use the public URL (keeps designs small + reusable)
     if (backendAvailable && sbUser) {
       const url = await uploadImageToStorage(f);
-      if (url) { addUpload(url); if (dropPt) placeImage(url, dropPt); return; }
+      if (url) { addUpload(url); if (dropPt) imageChoiceModal(url, dropPt); return; }
     }
     const reader = new FileReader();
-    reader.onload = () => { addUpload(reader.result); if (dropPt) placeImage(reader.result, dropPt); };
+    reader.onload = () => { addUpload(reader.result); if (dropPt) imageChoiceModal(reader.result, dropPt); };
     reader.readAsDataURL(f);
   });
 }
@@ -941,7 +1003,7 @@ function addUpload(href) {
 function renderUploads() {
   const grid = document.getElementById("uploadsGrid"); grid.innerHTML = "";
   document.getElementById("uploadsHint").style.display = uploads.length ? "none" : "block";
-  uploads.forEach(u => { const d = document.createElement("div"); d.className = "upload-thumb"; const img = document.createElement("img"); img.src = u.href; d.appendChild(img); d.title = "Click to add to canvas"; d.onclick = () => placeImage(u.href, centerPoint()); grid.appendChild(d); });
+  uploads.forEach(u => { const d = document.createElement("div"); d.className = "upload-thumb"; const img = document.createElement("img"); img.src = u.href; d.appendChild(img); d.title = "Click to add to canvas"; d.onclick = () => imageChoiceModal(u.href, centerPoint()); grid.appendChild(d); });
 }
 function placeImage(href, pt) {
   const tmp = new Image();
@@ -1061,7 +1123,8 @@ function renderProps() {
       ${rangeRow("Saturation","fSaturate",0,200,f.saturate)}
       ${rangeRow("Grayscale","fGrayscale",0,100,f.grayscale)}
       ${rangeRow("Blur","fBlur",0,20,f.blur)}
-      <button class="topbar-action" style="width:100%;justify-content:center;margin-top:4px" id="resetFilters">Reset filters</button></div>`;
+      <button class="topbar-action" style="width:100%;justify-content:center;margin-top:4px" id="resetFilters">Reset filters</button>
+      <button class="topbar-action" style="width:100%;justify-content:center;margin-top:6px" id="vectorizeBtn">✦ Convert to editable vectors</button></div>`;
   }
   if (s.type === "icon" || s.type === "text" || s.type==="rect"||s.type==="frame"||s.type==="ellipse") {
     html += `<div class="prop-section"><div class="prop-title">${s.type==="line"?"Color":"Fill"}</div><div class="field-row"><div class="field"><input data-prop="fill" type="color" value="${toHex(s.fill)}"><input data-prop="fillHex" type="text" value="${toHex(s.fill).toUpperCase()}"></div></div></div>`;
@@ -1087,6 +1150,7 @@ function renderProps() {
       el.addEventListener("change", () => pushHistory());
     });
     document.getElementById("resetFilters").onclick = () => { pushHistory(); s.filters = { brightness:100,contrast:100,saturate:100,grayscale:0,blur:0 }; render(); renderProps(); renderPages(); };
+    document.getElementById("vectorizeBtn").onclick = () => { const r = normRect(s); vectorizeImage(s.href, { x: r.x + r.w/2, y: r.y + r.h/2 }); };
   }
   document.getElementById("pDup").onclick = duplicateSelection;
   document.getElementById("pDel").onclick = deleteSelection;
@@ -1422,9 +1486,13 @@ window.addEventListener("keydown", e => { if (e.key === "Escape" && modalWrap.cl
 
 function setAuthUI() {
   const btn = document.getElementById("authBtn");
-  if (!backendAvailable) { btn.textContent = "Offline"; btn.title = "Cloud unavailable (no connection)"; btn.style.opacity = .6; return; }
-  if (sbUser) { btn.textContent = "● " + sbUser.email.split("@")[0]; btn.title = sbUser.email; }
-  else { btn.textContent = "Sign in"; btn.title = "Sign in / sign up"; }
+  const hbtn = document.getElementById("homeAuthBtn");
+  let label, title;
+  if (!backendAvailable) { label = "Offline"; title = "Cloud unavailable (no connection)"; if (btn) btn.style.opacity = .6; }
+  else if (sbUser) { label = "● " + sbUser.email.split("@")[0]; title = sbUser.email; }
+  else { label = "Sign in"; title = "Sign in / sign up"; }
+  if (btn) { btn.textContent = label; btn.title = title; }
+  if (hbtn) { hbtn.textContent = label; hbtn.title = title; }
 }
 
 function serializeDoc() { return { v: 2, pages: state.pages, current: state.current }; }
@@ -1775,6 +1843,150 @@ function loadTemplate(i) {
 }
 
 /* ============================================================
+   HOME PAGE  (Canva-style start screen)
+   ============================================================ */
+const home = document.getElementById("home");
+const CREATE_TILES = [
+  { name: "Presentation", w: 1280, h: 720, c: "#7c5cff" },
+  { name: "Instagram Post", w: 1080, h: 1080, c: "#e1306c" },
+  { name: "Instagram Story", w: 1080, h: 1920, c: "#f77737" },
+  { name: "Facebook Post", w: 1200, h: 630, c: "#1877f2" },
+  { name: "Poster", w: 1000, h: 1500, c: "#00b894" },
+  { name: "Logo", w: 500, h: 500, c: "#00cec9" },
+  { name: "Business Card", w: 525, h: 300, c: "#636e72" },
+  { name: "A4 Document", w: 794, h: 1123, c: "#0984e3" },
+];
+function tileIcon(c, label) {
+  return `<div class="ct-ic" style="background:${c}"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16"/></svg></div>`;
+}
+function buildHome() {
+  const row = document.getElementById("createRow"); row.innerHTML = "";
+  CREATE_TILES.forEach(t => {
+    const el = document.createElement("div"); el.className = "create-tile"; el.dataset.search = t.name.toLowerCase();
+    el.innerHTML = `${tileIcon(t.c)}<div class="ct-name">${t.name}</div><div class="ct-dim">${t.w}×${t.h}</div>`;
+    el.onclick = () => { newDoc({ w: t.w, h: t.h }, t.name); showEditor(); flashHint("New " + t.name); };
+    row.appendChild(el);
+  });
+  const tr = document.getElementById("homeTplRow"); tr.innerHTML = "";
+  TEMPLATES.forEach((t, i) => {
+    const card = document.createElement("div"); card.className = "home-tpl"; card.dataset.search = (t.name + " template").toLowerCase();
+    const pg = { w: t.w, h: t.h, bg: t.bg, shapes: t.build() };
+    const thumb = pageThumb(pg); thumb.classList.add("ht-thumb");
+    card.appendChild(thumb);
+    const name = document.createElement("div"); name.className = "ht-name"; name.textContent = t.name;
+    card.appendChild(name);
+    card.onclick = () => { loadTemplateAsDoc(i); showEditor(); };
+    tr.appendChild(card);
+  });
+  document.getElementById("homeSearch").addEventListener("input", e => filterHome(e.target.value.trim().toLowerCase()));
+  document.getElementById("homeBlank").onclick = () => { newDoc({ w: 1080, h: 1080 }, "Page 1"); showEditor(); };
+  document.getElementById("homeAuthBtn").onclick = () => sbUser ? showAccount() : (backendAvailable ? showAuth("in") : flashHint("Cloud unavailable offline"));
+  document.getElementById("homeBtn").onclick = showHome;
+}
+function filterHome(q) {
+  document.querySelectorAll("#createRow .create-tile, #homeTplRow .home-tpl").forEach(el => {
+    el.style.display = (!q || (el.dataset.search || "").includes(q)) ? "" : "none";
+  });
+  document.getElementById("createHeading").style.display = (!q || [...document.querySelectorAll("#createRow .create-tile")].some(e => e.style.display !== "none")) ? "" : "none";
+}
+function newDoc(preset, name) {
+  pageCounter++;
+  state.pages = [{ id: "p" + pageCounter, name: name || "Page 1", w: preset.w, h: preset.h, bg: "#ffffff", shapes: [] }];
+  state.current = 0; state.selected.clear();
+  currentDesignId = null; currentDesignTitle = "Untitled design";
+  history.length = 0; future.length = 0; updateUndoButtons();
+  fullRender(); syncSizeSelect(); setTimeout(zoomToFit, 30);
+}
+function loadTemplateAsDoc(i) {
+  const t = TEMPLATES[i]; if (!t) return;
+  pageCounter++;
+  state.pages = [{ id: "p" + pageCounter, name: t.name, w: t.w, h: t.h, bg: t.bg, shapes: t.build() }];
+  state.current = 0; state.selected.clear(); currentDesignId = null; currentDesignTitle = t.name;
+  history.length = 0; future.length = 0; updateUndoButtons();
+  fullRender(); syncSizeSelect(); setTimeout(zoomToFit, 30);
+}
+function showHome() { home.classList.add("open"); refreshHomeDesigns(); }
+function showEditor() { home.classList.remove("open"); applyView(); }
+async function refreshHomeDesigns() {
+  const box = document.getElementById("homeDesigns");
+  if (!backendAvailable || !sbUser) { box.className = "home-empty"; box.textContent = "Sign in to see your saved designs."; return; }
+  box.className = "tpl-row"; box.innerHTML = '<div class="home-empty">Loading…</div>';
+  const { data, error } = await sb.from("designs").select("id,title,updated_at").order("updated_at", { ascending: false }).limit(12);
+  if (error) { box.className = "home-empty"; box.textContent = error.message; return; }
+  if (!data.length) { box.className = "home-empty"; box.textContent = "No saved designs yet — create one and hit Save."; return; }
+  box.innerHTML = "";
+  data.forEach(d => {
+    const card = document.createElement("div"); card.className = "home-tpl";
+    card.innerHTML = `<div class="ht-thumb" style="display:grid;place-items:center;background:linear-gradient(135deg,#2a2740,#23233a)"><span style="font-size:30px">✦</span></div><div class="ht-name">${escapeHtml(d.title)}</div>`;
+    card.onclick = async () => { await openDesign(d.id); showEditor(); };
+    box.appendChild(card);
+  });
+}
+
+/* ============================================================
+   IMAGE → editable vectors (auto-trace) + import choice
+   ============================================================ */
+function rgbToHex(c) {
+  if (!c) return "#000000";
+  c = c.trim();
+  if (c.startsWith("#")) return c.length >= 7 ? c.slice(0, 7) : c;
+  const m = c.match(/rgba?\(([^)]+)\)/);
+  if (!m) return "#000000";
+  const p = m[1].split(",").map(x => parseFloat(x));
+  const h = v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+  return "#" + h(p[0]) + h(p[1]) + h(p[2]);
+}
+function imageChoiceModal(src, pt) {
+  openModal(`<span class="close-x" onclick="closeModal()">×</span>
+    <h3>Add image</h3><div class="sub">Keep it as a picture, or trace it into editable vectors (great for logos &amp; graphics; posterized for photos). Vectors export to Figma as editable shapes.</div>
+    <div class="body">
+      <button class="btn" id="asImage">Add as image</button>
+      <button class="btn ghost" id="asVector">Convert to editable vectors</button>
+      <div class="msg" id="imgChoiceMsg"></div>
+    </div>`);
+  document.getElementById("asImage").onclick = () => { closeModal(); placeImage(src, pt); };
+  document.getElementById("asVector").onclick = () => { document.getElementById("imgChoiceMsg").textContent = "Tracing…"; vectorizeImage(src, pt).then(() => closeModal()); };
+}
+async function vectorizeImage(src, pt) {
+  if (!window.ImageTracer) { flashHint("Vectorizer not loaded (offline?)"); return; }
+  flashHint("Tracing image into vectors…");
+  const dataUrl = await dataUrlFromUrl(src); // ensure clean (non-tainted) canvas
+  return new Promise(resolve => {
+    try {
+      window.ImageTracer.imageToSVG(dataUrl, (svgstr) => { addVectorsFromSVG(svgstr, pt); resolve(); },
+        { numberofcolors: 10, pathomit: 8, ltres: 1, qtres: 1, scale: 1, strokewidth: 0 });
+    } catch (e) { flashHint("Trace failed: " + (e.message || "")); resolve(); }
+  });
+}
+function addVectorsFromSVG(svgstr, pt) {
+  let docp;
+  try { docp = new DOMParser().parseFromString(svgstr, "image/svg+xml"); } catch (e) { flashHint("Trace parse failed"); return; }
+  const svgEl = docp.querySelector("svg");
+  const paths = [...docp.querySelectorAll("path")];
+  if (!svgEl || !paths.length) { flashHint("Couldn't trace this image — try a simpler/flatter graphic."); return; }
+  const vbW = parseFloat(svgEl.getAttribute("width")) || 100, vbH = parseFloat(svgEl.getAttribute("height")) || 100;
+  pushHistory();
+  const pg = P();
+  const target = Math.min(pg.w, pg.h) * 0.6;
+  const scale = target / Math.max(vbW, vbH);
+  const w = vbW * scale, h = vbH * scale;
+  const ox = pt.x - w / 2, oy = pt.y - h / 2;
+  const ids = [];
+  paths.slice(0, 400).forEach((p, i) => {
+    const d = p.getAttribute("d"); if (!d) return;
+    const s = makeShape("icon", ox, oy, w, h);
+    s.path = d; s.vbW = vbW; s.vbH = vbH; s.vb = vbW;
+    s.fill = rgbToHex(p.getAttribute("fill") || "#000000");
+    const fo = p.getAttribute("fill-opacity"); if (fo != null) s.iconOpacity = parseFloat(fo);
+    s.name = "Vector " + (i + 1);
+    pg.shapes.push(s); ids.push(s.id);
+  });
+  state.selected = new Set(ids);
+  render(); renderLayers(); renderProps(); renderPages();
+  flashHint("Traced into " + ids.length + " editable vectors ✓");
+}
+
+/* ============================================================
    SEED
    ============================================================ */
 function seed() {
@@ -1786,11 +1998,11 @@ function seed() {
   const btn = makeShape("rect", pg.w/2 - 110, 520, 220, 64); btn.fill = "#00cec9"; btn.radius = 14; btn.name = "Button";
   const btnT = makeShape("text", pg.w/2 - 80, 535, 160, 32); btnT.text = "Get started"; btnT.fontSize = 26; btnT.weight = 600; btnT.align = "center"; btnT.x = pg.w/2 - 80; btnT.fill = "#08343a"; btnT.name = "Button Label";
   pg.shapes = [band, star, title, sub, btn, btnT];
-  fullRender(); syncSizeSelect(); buildElementGrids(); renderUploads(); initFigma(); buildTemplates(); wireAI();
+  fullRender(); syncSizeSelect(); buildElementGrids(); renderUploads(); initFigma(); buildTemplates(); wireAI(); buildHome();
   setTimeout(zoomToFit, 30);
 }
 const bootViewId = parseViewId();
-if (bootViewId) { enterViewMode(bootViewId); } else { seed(); }
+if (bootViewId) { enterViewMode(bootViewId); } else { seed(); showHome(); }
 updateUndoButtons();
 initBackend();
 window.addEventListener("resize", () => { applyView(); renderOverlay(); });
