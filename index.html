@@ -1291,8 +1291,8 @@ async function dataUrlFromUrl(url) {
     return await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(b); });
   } catch (e) { return url; }
 }
-async function exportPNG() {
-  const pg = P();
+async function pageToPngBlob(pg, scale) {
+  scale = scale || 2;
   // inline any remote (storage) images so the rasterized canvas isn't tainted
   const remote = pg.shapes.filter(s => s.type === "image" && s.href && !s.href.startsWith("data:"));
   const originals = remote.map(s => s.href);
@@ -1300,23 +1300,89 @@ async function exportPNG() {
   const node = buildPageSVG(pg);
   const str = new XMLSerializer().serializeToString(node);
   remote.forEach((s, i) => s.href = originals[i]);
-  const svgBlob = new Blob([str], { type:"image/svg+xml;charset=utf-8" });
+  const svgBlob = new Blob([str], { type: "image/svg+xml;charset=utf-8" });
   const url = URL.createObjectURL(svgBlob);
-  const img = new Image();
-  img.onload = () => {
-    const scale = 2; const canvas = document.createElement("canvas");
-    canvas.width = pg.w*scale; canvas.height = pg.h*scale;
-    const ctx = canvas.getContext("2d"); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0);
-    URL.revokeObjectURL(url);
-    canvas.toBlob(b => { downloadBlob(b, `${pg.name.replace(/\s+/g,"-").toLowerCase()}.png`); flashHint("Exported PNG ✓"); });
-  };
-  img.onerror = () => { URL.revokeObjectURL(url); flashHint("PNG export failed"); };
-  img.src = url;
+  return await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = pg.w * scale; canvas.height = pg.h * scale;
+      const ctx = canvas.getContext("2d"); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(b => resolve(b));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("raster failed")); };
+    img.src = url;
+  });
+}
+async function exportPNG() {
+  const pg = P();
+  try { const b = await pageToPngBlob(pg); downloadBlob(b, `${pg.name.replace(/\s+/g,"-").toLowerCase()}.png`); flashHint("Exported PNG ✓"); }
+  catch (e) { flashHint("PNG export failed"); }
+}
+function blobToDataUrl(blob) { return new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(blob); }); }
+async function uploadBlobToStorage(blob, ext) {
+  if (!backendAvailable || !sbUser) return null;
+  const path = `${sbUser.id}/email-${Date.now()}.${ext}`;
+  const { error } = await sb.storage.from("design-images").upload(path, blob, { contentType: blob.type, upsert: false });
+  if (error) { console.warn("email image upload failed", error.message); return null; }
+  return sb.storage.from("design-images").getPublicUrl(path).data.publicUrl;
+}
+function emailHtml(imgUrl, alt) {
+  return `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>${escapeHtml(alt || "Email")}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f7;-webkit-text-size-adjust:100%;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f7;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:10px;overflow:hidden;">
+          <tr>
+            <td style="padding:0;font-size:0;line-height:0;">
+              <img src="${imgUrl}" alt="${escapeHtml(alt || "")}" width="600" style="display:block;width:100%;max-width:600px;height:auto;border:0;outline:none;text-decoration:none;">
+            </td>
+          </tr>
+        </table>
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;">
+          <tr>
+            <td align="center" style="padding:16px 16px 8px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#8a8a93;">
+              You're receiving this because you subscribed.<br>
+              <a href="*|UNSUB|*" style="color:#8a8a93;text-decoration:underline;">Unsubscribe</a>
+              &nbsp;·&nbsp; *|HTML:LIST_ADDRESS|*
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+async function exportEmailHTML() {
+  const pg = P();
+  flashHint("Building email HTML…");
+  let blob;
+  try { blob = await pageToPngBlob(pg, 2); } catch (e) { flashHint("Email export failed (raster)"); return; }
+  let imgUrl = null, hosted = false;
+  if (backendAvailable && sbUser) { imgUrl = await uploadBlobToStorage(blob, "png"); hosted = !!imgUrl; }
+  if (!imgUrl) imgUrl = await blobToDataUrl(blob);
+  const html = emailHtml(imgUrl, pg.name);
+  downloadBlob(new Blob([html], { type: "text/html" }), `${pg.name.replace(/\s+/g,"-").toLowerCase()}-email.html`);
+  if (hosted) flashHint("Email HTML exported — ready to import into Mailchimp ✓");
+  else flashHint("Email HTML exported. Sign in first to host the image so it shows in inboxes.");
 }
 document.getElementById("exportBtn").onclick = () => {
-  const choice = prompt("Export current page as: type 'png' or 'svg'", "png");
+  const choice = prompt("Export current page as: 'png', 'svg', or 'email' (Mailchimp-ready HTML)", "png");
   if (!choice) return;
-  if (choice.toLowerCase().includes("svg")) exportSVG(); else exportPNG();
+  const c = choice.toLowerCase();
+  if (c.includes("email") || c.includes("mail") || c.includes("html")) exportEmailHTML();
+  else if (c.includes("svg")) exportSVG();
+  else exportPNG();
 };
 document.getElementById("shareBtn").onclick = () => flashHint("Share link copied (demo) ✓");
 let hintTimer = null;
@@ -1996,6 +2062,52 @@ const TEMPLATES = [
     const p = PAL[pal];
     TEMPLATES.push({ name: "Card · " + label, w: 1050, h: 600, bg: p.bg, build: () => L[layout](p, PE[pi]) });
   });
+})();
+
+/* ---------- Email templates (640px wide → Export as Email HTML for Mailchimp) ---------- */
+(function addEmailTemplates() {
+  TEMPLATES.push({ name: "Email · Newsletter", w: 640, h: 980, bg: "#ffffff", build: () => [
+    T("rect", 0, 0, 640, 980, { fill: "#ffffff", name: "BG" }),
+    T("rect", 0, 0, 640, 88, { fill: "#15151c", name: "Header" }),
+    T("ellipse", 28, 28, 32, 32, { fill: "#7c5cff", name: "Mark" }),
+    T("text", 76, 30, 400, 0, { text: "LUMEN", fontSize: 30, weight: 800, fill: "#ffffff", name: "Logo" }),
+    T("rect", 0, 88, 640, 300, { fill: "#7c5cff", name: "Hero" }),
+    T("ellipse", 440, 120, 260, 260, { fill: "#00cec9", opacity: 0.35, name: "Glow" }),
+    T("text", 40, 168, 560, 0, { text: "This month at Lumen", fontSize: 44, weight: 800, fill: "#ffffff", name: "Headline" }),
+    T("text", 42, 250, 560, 0, { text: "Fresh templates, AI design & more", fontSize: 22, weight: 400, fill: "#eae6ff", name: "Subhead" }),
+    T("text", 40, 440, 560, 0, { text: "Hi there,", fontSize: 24, weight: 700, fill: "#15151c", name: "Greeting" }),
+    T("text", 40, 490, 560, 0, { text: "We shipped 20 new business card templates,", fontSize: 20, weight: 400, fill: "#444444", name: "Body 1" }),
+    T("text", 40, 520, 560, 0, { text: "an AI design generator, and Figma export.", fontSize: 20, weight: 400, fill: "#444444", name: "Body 2" }),
+    T("rect", 40, 600, 230, 62, { fill: "#7c5cff", radius: 10, name: "Button" }),
+    T("text", 40, 619, 230, 0, { text: "See what's new", fontSize: 22, weight: 700, align: "center", fill: "#ffffff", name: "BtnLabel" }),
+    T("line", 40, 770, 560, 0, { stroke: "#e3e3ea", strokeWidth: 2, name: "Rule" }),
+    T("text", 40, 805, 560, 0, { text: "Lumen Studio · lumen.studio", fontSize: 18, weight: 600, fill: "#888888", name: "Footer" }),
+    T("text", 40, 835, 560, 0, { text: "You receive this because you subscribed.", fontSize: 15, weight: 400, fill: "#aaaaaa", name: "Legal" }),
+  ] });
+  TEMPLATES.push({ name: "Email · Announcement", w: 640, h: 900, bg: "#15151c", build: () => [
+    T("rect", 0, 0, 640, 900, { fill: "#15151c", name: "BG" }),
+    T("text", 40, 90, 560, 0, { text: "NEW", fontSize: 22, weight: 800, fill: "#00cec9", name: "Eyebrow" }),
+    T("text", 40, 140, 560, 0, { text: "Big news is", fontSize: 64, weight: 800, fill: "#ffffff", name: "Head 1" }),
+    T("text", 40, 222, 560, 0, { text: "here.", fontSize: 64, weight: 800, fill: "#7c5cff", name: "Head 2" }),
+    T("text", 42, 350, 560, 0, { text: "We just launched something special", fontSize: 22, weight: 400, fill: "#9a9aa6", name: "Body 1" }),
+    T("text", 42, 384, 560, 0, { text: "we think you'll love.", fontSize: 22, weight: 400, fill: "#9a9aa6", name: "Body 2" }),
+    T("rect", 40, 470, 270, 64, { fill: "#00cec9", radius: 10, name: "Button" }),
+    T("text", 40, 490, 270, 0, { text: "Check it out", fontSize: 24, weight: 700, align: "center", fill: "#06302e", name: "BtnLabel" }),
+    T("rect", 0, 820, 640, 80, { fill: "#0e0e13", name: "Footer bar" }),
+    T("text", 40, 850, 560, 0, { text: "Lumen Studio · Unsubscribe anytime", fontSize: 16, weight: 500, fill: "#777777", name: "Footer" }),
+  ] });
+  TEMPLATES.push({ name: "Email · Promo Sale", w: 640, h: 900, bg: "#fff5f2", build: () => [
+    T("rect", 0, 0, 640, 900, { fill: "#fff5f2", name: "BG" }),
+    T("rect", 0, 0, 640, 360, { fill: "#ff6b6b", name: "Hero" }),
+    T("ellipse", 460, -60, 300, 300, { fill: "#ffa94d", opacity: 0.5, name: "Glow" }),
+    T("text", 40, 108, 560, 0, { text: "SUMMER", fontSize: 64, weight: 800, fill: "#ffffff", name: "Big" }),
+    T("text", 40, 192, 560, 0, { text: "SALE — 30% OFF", fontSize: 40, weight: 800, fill: "#2b1a16", name: "Sub" }),
+    T("text", 42, 420, 560, 0, { text: "Use code SUN30 at checkout.", fontSize: 24, weight: 500, fill: "#2b1a16", name: "Body" }),
+    T("text", 42, 462, 560, 0, { text: "This week only.", fontSize: 20, weight: 400, fill: "#9c7b72", name: "Body 2" }),
+    T("rect", 40, 560, 250, 64, { fill: "#2b1a16", radius: 10, name: "Button" }),
+    T("text", 40, 580, 250, 0, { text: "Shop the sale", fontSize: 22, weight: 700, align: "center", fill: "#ffffff", name: "BtnLabel" }),
+    T("text", 40, 800, 560, 0, { text: "Lumen Shop · Unsubscribe", fontSize: 16, weight: 500, fill: "#9c7b72", name: "Footer" }),
+  ] });
 })();
 function buildTemplates() {
   const grid = document.getElementById("tplGrid"); if (!grid) return;
